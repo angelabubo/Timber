@@ -286,7 +286,7 @@ int main()
     textureGameOver.loadFromFile("graphics/rip.png");
     Sprite spriteGameOver;
     spriteGameOver.setTexture(textureGameOver);
-    spriteGameOver.setPosition(600, 860);
+    spriteGameOver.setPosition(675, 2000);
 
     //Prepare the axe
     Texture textureAxe;
@@ -321,7 +321,7 @@ int main()
     chop.setBuffer(chopBuffer);
 
     SoundBuffer goBuffer;
-    goBuffer.loadFromFile("sound/death.wav");
+    goBuffer.loadFromFile("sound/gameover.wav");
     Sound gameOver;
     gameOver.setBuffer(goBuffer);
 
