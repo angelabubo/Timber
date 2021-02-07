@@ -12,6 +12,7 @@ using namespace std;
 const int NUM_BRANCHES = 6;
 Sprite branches[NUM_BRANCHES];
 
+
 //Where is the player or branch?
 //Left or right?
 enum class side {
@@ -110,7 +111,30 @@ void UpdateBranches(int seed)
         break;
     }
 }
+void HandleKeyPress(side playerSide, int& score, float& timeRemaining, 
+    Sprite& spriteAxe, Sprite& spritePlayer, Sprite& spriteLog,
+    bool& logActive, bool& acceptInput, 
+    const float& axePosition, const float& playerPosX, const float& playerPosY)
+{
+    //Make sure player is on the right
+    playerSide = side::RIGHT;
+    score++;
 
+    //Increase amount of time remaining
+    timeRemaining += (2 / score) + 0.15;
+
+    spriteAxe.setPosition(axePosition,
+        spriteAxe.getPosition().y);
+    spritePlayer.setPosition(playerPosX, playerPosY);
+
+    //Update the branches
+    UpdateBranches(score);
+
+    //Set the log flying to the left
+    spriteLog.setPosition(810, 720);
+    logActive = true;
+    acceptInput = false;
+}
 
 
 int main()
@@ -272,12 +296,46 @@ int main()
     spriteAxe.setPosition(700, 830);
 
     //Line the axe up with the tree
+    const float AXE_POSITION_LEFT = 700;
+    const float AXE_POSITION_RIGHT = 1075;
 
+    //Prepare the flying log
+    Texture textureLog;
+    textureLog.loadFromFile("graphics/log.png");
+    Sprite spriteLog;
+    spriteLog.setTexture(textureLog);
+    spriteLog.setPosition(810, 720);
+
+    //Log related variables
+    bool logActive = false;
+    float logSpeedX = 1000;
+    float logSpeedY = -1500;
+
+    //Control the player input
+    bool acceptInput = false;
+
+
+    //MAIN GAME LOOP
     while (window.isOpen())
     {
         //*******************************
         //Handle player's input
         //*******************************
+
+        Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == Event::KeyReleased && !paused)
+            {
+                //Listen for key press again
+                acceptInput = true;
+
+                //Hide the axe
+                spriteAxe.setPosition(2000,
+                    spriteAxe.getPosition().y);
+            }
+
+        }
 
         //Exit the game
         if (Keyboard::isKeyPressed(Keyboard::Escape)) {
@@ -291,6 +349,42 @@ int main()
             //Reset the time and score
             score = 0;
             timeRemaining = 5;
+
+            //Make all the branches disappear
+            for (int i = 0; i < NUM_BRANCHES; i++)
+            {
+                branchPositions[i] = side::NONE;
+            }
+
+            //Make sure gameover icon is hidden
+            spriteGameOver.setPosition(675, 2000);
+
+            //Move the player into position
+            spritePlayer.setPosition(580, 720);
+            acceptInput = true;
+        }
+
+        //Wrap the player controls
+        //Make sure we are accepting input
+        if (acceptInput)
+        {
+            //First handle pressing the right cursor key
+            if (Keyboard::isKeyPressed(Keyboard::Right))
+            {
+                HandleKeyPress(side::RIGHT, score, timeRemaining,
+                    spriteAxe, spritePlayer, spriteLog,
+                    logActive, acceptInput,
+                    AXE_POSITION_RIGHT, 1200.0f, 720.0f);
+                logSpeedX = -5000;
+            }
+            if (Keyboard::isKeyPressed(Keyboard::Left))
+            {
+                HandleKeyPress(side::LEFT, score, timeRemaining,
+                    spriteAxe, spritePlayer, spriteLog,
+                    logActive, acceptInput,
+                    AXE_POSITION_LEFT, 580.0f, 720.0f);
+                logSpeedX = 5000;
+            }
         }
 
         //*******************************
@@ -357,6 +451,28 @@ int main()
                 }
             }
 
+            //Handle a flying log
+            if (logActive)
+            {
+                spriteLog.setPosition(
+                    spriteLog.getPosition().x +
+                    (logSpeedX * dt.asSeconds()),
+                    spriteLog.getPosition().y +
+                    (logSpeedY * dt.asSeconds()));
+
+                //Has the log reached the right-hand edge?
+                if (spriteLog.getPosition().x < -100 ||
+                    spriteLog.getPosition().x > 2000)
+                {
+                    //Set it up ready to be a whole new log next frame
+                    logActive = false;
+                    spriteLog.setPosition(810, 720);
+                }
+
+
+              
+            }
+
         } //end if paused
  
         //*******************************
@@ -382,6 +498,18 @@ int main()
 
         //Draw the tree
         window.draw(spriteTree);
+
+        //Draw the player
+        window.draw(spritePlayer);
+
+        //Draw the axe
+        window.draw(spriteAxe);
+
+        //Draw the flying log
+        window.draw(spriteLog);
+
+        //Draw the gameover icon
+        window.draw(spriteGameOver);
 
         //Draw the bee
         window.draw(spriteBee);
