@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <sstream>
 
 using namespace sf;
@@ -116,6 +117,7 @@ void HandleKeyPress(int& score, float& timeRemaining,
     bool& logActive, bool& acceptInput, 
     const float& axePosition, const float& playerPosX, const float& playerPosY)
 {
+    //Increment score
     score++;
 
     //Increase amount of time remaining
@@ -312,6 +314,21 @@ int main()
     //Control the player input
     bool acceptInput = false;
 
+    //Prepare the sound
+    SoundBuffer chopBuffer;
+    chopBuffer.loadFromFile("sound/chop.wav");
+    Sound chop;
+    chop.setBuffer(chopBuffer);
+
+    SoundBuffer goBuffer;
+    goBuffer.loadFromFile("sound/death.wav");
+    Sound gameOver;
+    gameOver.setBuffer(goBuffer);
+
+    SoundBuffer ootBuffer;
+    ootBuffer.loadFromFile("sound/out_of_time.wav");
+    Sound outOfTime;
+    outOfTime.setBuffer(ootBuffer);
 
     //MAIN GAME LOOP
     while (window.isOpen())
@@ -376,6 +393,9 @@ int main()
                     logActive, acceptInput,
                     AXE_POSITION_RIGHT, 1200.0f, 720.0f);
                 logSpeedX = -5000;
+
+                //Play chop sound
+                chop.play();
             }
             if (Keyboard::isKeyPressed(Keyboard::Left))
             {
@@ -386,6 +406,9 @@ int main()
                     logActive, acceptInput,
                     AXE_POSITION_LEFT, 580.0f, 720.0f);
                 logSpeedX = 5000;
+
+                //Play chop sound
+                chop.play();
             }
         }
 
@@ -412,6 +435,9 @@ int main()
 
                 //Reposition the text based on its new size
                 PositionMessage(messageText);
+
+                //Play chop sound
+                outOfTime.play();
             }
 
 
@@ -491,6 +517,8 @@ int main()
                 //Center it on the screen
                 PositionMessage(messageText);
 
+                //Play game over sound
+                gameOver.play();
 
             }
 
