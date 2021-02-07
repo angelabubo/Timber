@@ -111,13 +111,11 @@ void UpdateBranches(int seed)
         break;
     }
 }
-void HandleKeyPress(side playerSide, int& score, float& timeRemaining, 
+void HandleKeyPress(int& score, float& timeRemaining, 
     Sprite& spriteAxe, Sprite& spritePlayer, Sprite& spriteLog,
     bool& logActive, bool& acceptInput, 
     const float& axePosition, const float& playerPosX, const float& playerPosY)
 {
-    //Make sure player is on the right
-    playerSide = side::RIGHT;
     score++;
 
     //Increase amount of time remaining
@@ -371,7 +369,9 @@ int main()
             //First handle pressing the right cursor key
             if (Keyboard::isKeyPressed(Keyboard::Right))
             {
-                HandleKeyPress(side::RIGHT, score, timeRemaining,
+                //Make sure player is on the right
+                playerSide = side::RIGHT;
+                HandleKeyPress(score, timeRemaining,
                     spriteAxe, spritePlayer, spriteLog,
                     logActive, acceptInput,
                     AXE_POSITION_RIGHT, 1200.0f, 720.0f);
@@ -379,7 +379,9 @@ int main()
             }
             if (Keyboard::isKeyPressed(Keyboard::Left))
             {
-                HandleKeyPress(side::LEFT, score, timeRemaining,
+                //Make sure player is on the left
+                playerSide = side::LEFT;
+                HandleKeyPress( score, timeRemaining,
                     spriteAxe, spritePlayer, spriteLog,
                     logActive, acceptInput,
                     AXE_POSITION_LEFT, 580.0f, 720.0f);
@@ -467,10 +469,29 @@ int main()
                     //Set it up ready to be a whole new log next frame
                     logActive = false;
                     spriteLog.setPosition(810, 720);
-                }
+                }              
+            }
+
+            //Has the player been squished by a log?
+            if (branchPositions[5] == playerSide)
+            {
+                //Game Over
+                paused = true;
+                acceptInput = false;
+
+                //Draw the game over image
+                spriteGameOver.setPosition(525, 760);
+
+                //Hide the player
+                spritePlayer.setPosition(2000, 660);
+
+                //Change the text of the message
+                messageText.setString("SQUISHED!");
+
+                //Center it on the screen
+                PositionMessage(messageText);
 
 
-              
             }
 
         } //end if paused
